@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>쏘카 vs 자차 주행비용 비교</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #13151f; color: #eef; font-family: sans-serif; padding: 20px 16px; min-height: 100vh; }
+    h2 { text-align: center; font-size: 19px; margin-bottom: 4px; }
+    .sub { text-align: center; color: #556; font-size: 12px; margin-bottom: 20px; }
+    .row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .card { background: #1e2130; border-radius: 12px; padding: 14px; }
+    .card-label { font-size: 12px; margin-bottom: 8px; }
+    .blue { color: #4dabf7; }
+    .red { color: #ff6b6b; }
+    .cat-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .cat-btn { padding: 4px 10px; border-radius: 20px; border: none; font-size: 11px; cursor: pointer; background: #2a2f45; color: #aab; }
+    .cat-btn.active { background: #1c3a6b; color: #4dabf7; }
+    select { width: 100%; background: #2a2f45; color: #fff; border: 1px solid #3a3f5c; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .my-btn { display: block; width: 100%; text-align: left; margin-bottom: 5px; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 12px; border: 1px solid transparent; background: #2a2f45; color: #aab; }
+    .my-btn.active { background: #2e1a1a; color: #ff6b6b; border-color: #ff6b6b; font-weight: 700; }
+    .slider-card { background: #1e2130; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+    .slider-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .slider-top span:first-child { font-size: 13px; color: #aab; }
+    .slider-top span:last-child { font-size: 18px; font-weight: 800; }
+    input[type=range] { width: 100%; accent-color: #4dabf7; margin-bottom: 10px; }
+    .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .q-btn { flex: 1; min-width: 36px; padding: 5px 0; border-radius: 8px; border: none; background: #2a2f45; color: #778; cursor: pointer; font-size: 12px; }
+    .q-btn.active { background: #1c3a6b; color: #4dabf7; }
+    .result-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .res-card { flex: 1; min-width: 100px; border-radius: 14px; padding: 14px; text-align: center; border: 2px solid #2a2f45; background: #1e2130; }
+    .res-card.winner-blue { background: #162136; border-color: #4dabf7; }
+    .res-card.winner-red { background: #2e1a1a; border-color: #ff6b6b; }
+    .res-label { font-size: 11px; color: #aab; margin-bottom: 4px; }
+    .res-val { font-size: 22px; font-weight: 800; }
+    .res-sub { font-size: 10px; color: #556; margin-top: 4px; }
+    .res-win { font-size: 11px; margin-top: 4px; }
+    .bep-box { background: #1e1a2e; border: 1px solid #6c4db5; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #c5b8f0; text-align: center; }
+    .ev-box { background: #162136; border: 1px solid #4dabf7; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #a3d4f5; text-align: center; }
+    .chart-wrap { background: #1e2130; border-radius: 14px; padding: 14px 8px 8px; }
+    .foot { text-align: center; color: #334; font-size: 10px; margin-top: 8px; }
+    .flex2 { flex: 2; min-width: 200px; }
+    .flex1 { flex: 1; min-width: 160px; }
+  </style>
+</head>
+<body>
+  <h2>🚗 쏘카 vs 자차 주행비용 비교</h2>
+  <p class="sub">휘발유 1,900원/L · 쏘카 30km 무료 · 주행요금만 비교</p>
+
+  <div class="row">
+    <div class="card flex2">
+      <div class="card-label blue">🔵 쏘카 차종 선택</div>
+      <div class="cat-wrap" id="catBtns"></div>
+      <select id="carSelect"></select>
+    </div>
+    <div class="card flex1">
+      <div class="card-label red">🔴 자차 연비</div>
+      <div id="myCarBtns"></div>
+    </div>
+  </div>
+
+  <div class="slider-card">
+    <div class="slider-top">
+      <span>주행거리</span>
+      <span id="kmLabel">80 km</span>
+    </div>
+    <input type="range" id="kmSlider" min="0" max="300" value="80" />
+    <div class="quick-btns" id="quickBtns"></div>
+  </div>
+
+  <div class="result-row" id="resultRow"></div>
+  <div id="bepBox"></div>
+  <div class="chart-wrap"><canvas id="myChart"></canvas></div>
+  <p class="foot">* 자차: 기름값만 포함 (보험·감가상각·주차비 미포함) / 쏘카: 30km 초과 주행요금만 (대여료 제외)</p>
+
+<script>
+const SOCAR = [
+  {category:"경형",name:"더뉴레이",rate:240},{category:"경형",name:"모닝 어반",rate:240},
+  {category:"경형",name:"더뉴기아레이",rate:240},{category:"경형",name:"더뉴기아레이 루프탑",rate:285},
+  {category:"경형",name:"더뉴모닝",rate:240},{category:"소형SUV",name:"셀토스",rate:245},
+  {category:"소형SUV",name:"더뉴코나",rate:245},{category:"소형SUV",name:"XM3",rate:245},
+  {category:"소형SUV",name:"베리뉴티볼리",rate:245},{category:"소형SUV",name:"더뉴셀토스",rate:245},
+  {category:"소형SUV",name:"디올뉴코나",rate:245},{category:"수입",name:"BMW X1",rate:285},
+  {category:"수입",name:"BMW 520i M Sport",rate:285},{category:"수입",name:"벤츠 E200",rate:285},
+  {category:"수입",name:"미니 컨버터블",rate:285},{category:"수입",name:"BMW 뉴X3",rate:285},
+  {category:"수입",name:"포르쉐 911 카레라",rate:680},{category:"승합",name:"스타리아 11인승",rate:320},
+  {category:"승합",name:"스타리아 캠퍼4",rate:375},{category:"엔트리SUV",name:"캐스퍼",rate:240},
+  {category:"준대형",name:"더뉴그랜저",rate:310},{category:"준대형",name:"K8",rate:310},
+  {category:"준대형",name:"디올뉴그랜저",rate:310},{category:"준대형",name:"더뉴G80",rate:310},
+  {category:"준대형",name:"더뉴K8 하이브리드",rate:265},{category:"준대형",name:"디올뉴그랜저 하이브리드",rate:265},
+  {category:"준대형SUV",name:"팰리세이드",rate:300},{category:"준대형SUV",name:"GV80",rate:310},
+  {category:"준중형",name:"올뉴아반떼",rate:245},{category:"준중형",name:"더뉴K3",rate:245},
+  {category:"준중형",name:"더뉴아반떼",rate:245},{category:"준중형",name:"더뉴아반떼N",rate:350},
+  {category:"준중형SUV",name:"디올뉴투싼",rate:275},{category:"준중형SUV",name:"디올뉴스포티지",rate:275},
+  {category:"중형",name:"쏘나타 센슈어스",rate:275},{category:"중형",name:"K5",rate:275},
+  {category:"중형",name:"쏘나타 디엣지",rate:275},{category:"중형",name:"더뉴K5",rate:275},
+  {category:"중형SUV",name:"디올뉴싼타페",rate:300},{category:"중형SUV",name:"QM6",rate:300},
+  {category:"중형SUV",name:"토레스",rate:300},{category:"중형SUV",name:"GV70",rate:300},
+  {category:"중형SUV",name:"더뉴쏘렌토",rate:300},{category:"RV",name:"카니발 11인승",rate:320},
+  {category:"RV",name:"더뉴카니발",rate:320},{category:"EV",name:"니로 EV",rate:0},
+  {category:"EV",name:"니로 플러스",rate:0},{category:"EV",name:"아이오닉6 롱레인지",rate:0},
+  {category:"EV",name:"폴스타2 롱레인지",rate:0},{category:"EV",name:"EV6 롱레인지",rate:0},
+  {category:"EV",name:"디올뉴코나 EV",rate:0},{category:"EV",name:"EV9 롱레인지",rate:0},
+  {category:"EV",name:"레이 EV",rate:0},{category:"EV",name:"EV3 롱레인지",rate:0},
+  {category:"EV",name:"EV4 롱레인지",rate:0},{category:"EV",name:"아이오닉9",rate:0},
+];
+const MY_CARS = [
+  {label:"경차 (15km/L)",mpg:15},{label:"준중형 (13km/L)",mpg:13},
+  {label:"중형 (12km/L)",mpg:12},{label:"준대형/SUV (10km/L)",mpg:10},{label:"대형SUV (9km/L)",mpg:9}
+];
+const FUEL=1900, FREE_KM=30;
+const categories=[...new Set(SOCAR.map(c=>c.category))];
+
+let selCat="경형", selCar=SOCAR[0], myCarIdx=2, km=80, chart;
+
+function socarCost(k,rate){ return k<=FREE_KM?0:(k-FREE_KM)*rate; }
+function myCost(k,mpg){ return Math.round((k/mpg)*FUEL); }
+
+// 카테고리 버튼
+const catWrap=document.getElementById("catBtns");
+categories.forEach(c=>{
+  const b=document.createElement("button");
+  b.className="cat-btn"+(c===selCat?" active":"");
+  b.textContent=c;
+  b.onclick=()=>{ selCat=c; selCar=SOCAR.find(s=>s.category===c); renderCatBtns(); renderSelect(); update(); };
+  catWrap.appendChild(b);
+});
+function renderCatBtns(){ catWrap.querySelectorAll(".cat-btn").forEach((b,i)=>b.className="cat-btn"+(categories[i]===selCat?" active":"")); }
+
+// 차종 select
+const carSel=document.getElementById("carSelect");
+function renderSelect(){
+  carSel.innerHTML="";
+  SOCAR.filter(s=>s.category===selCat).forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s.name; o.textContent=`${s.name} — ${s.rate===0?"EV(주행무료)":s.rate+"원/km"}`;
+    carSel.appendChild(o);
+  });
+  carSel.value=selCar.name;
+}
+carSel.onchange=()=>{ selCar=SOCAR.find(s=>s.name===carSel.value); update(); };
+renderSelect();
+
+// 자차 버튼
+const myWrap=document.getElementById("myCarBtns");
+MY_CARS.forEach((c,i)=>{
+  const b=document.createElement("button");
+  b.className="my-btn"+(i===myCarIdx?" active":"");
+  b.textContent=c.label;
+  b.onclick=()=>{ myCarIdx=i; myWrap.querySelectorAll(".my-btn").forEach((x,j)=>x.className="my-btn"+(j===i?" active":"")); update(); };
+  myWrap.appendChild(b);
+});
+
+// 슬라이더
+const slider=document.getElementById("kmSlider");
+const kmLabel=document.getElementById("kmLabel");
+slider.oninput=()=>{ km=+slider.value; kmLabel.textContent=km+" km"; renderQuick(); update(); };
+
+// 빠른 버튼
+const quickVals=[10,30,50,100,150,200,300];
+const quickWrap=document.getElementById("quickBtns");
+quickVals.forEach(v=>{
+  const b=document.createElement("button");
+  b.className="q-btn"+(v===km?" active":"");
+  b.textContent=v;
+  b.onclick=()=>{ km=v; slider.value=v; kmLabel.textContent=v+" km"; renderQuick(); update(); };
+  quickWrap.appendChild(b);
+});
+function renderQuick(){ quickWrap.querySelectorAll(".q-btn").forEach((b,i)=>b.className="q-btn"+(quickVals[i]===km?" active":"")); }
+
+// 차트 초기화
+const ctx=document.getElementById("myChart").getContext("2d");
+chart=new Chart(ctx,{
+  type:"line",
+  data:{ labels:[], datasets:[
+    {label:"쏘카",data:[],borderColor:"#4dabf7",borderWidth:2.5,pointRadius:0,tension:0.3},
+    {label:"자차",data:[],borderColor:"#ff6b6b",borderWidth:2.5,pointRadius:0,tension:0.3}
+  ]},
+  options:{
+    responsive:true, animation:false,
+    plugins:{ legend:{ labels:{ color:"#aab", font:{size:12} } }, tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString()}원` } } },
+    scales:{
+      x:{ ticks:{color:"#667",font:{size:11}}, grid:{color:"#252a40"}, title:{display:true,text:"km",color:"#556"} },
+      y:{ ticks:{color:"#667",font:{size:10}, callback:v=>v>=10000?Math.round(v/10000)+"만":v}, grid:{color:"#252a40"} }
+    }
+  }
+});
+
+function update(){
+  const mpg=MY_CARS[myCarIdx].mpg;
+  const sc=socarCost(km,selCar.rate);
+  const mc=myCost(km,mpg);
+  const diff=sc-mc;
+
+  // 결과 카드
+  const rr=document.getElementById("resultRow");
+  const items=[
+    {label:`🔵 쏘카 (${selCar.name})`,val:sc,sub:`30km 무료 + ${selCar.rate===0?"EV 주행무료":selCar.rate+"원/km"}`,color:"#4dabf7",winClass:"winner-blue"},
+    {label:`🔴 자차 (${MY_CARS[myCarIdx].label})`,val:mc,sub:"연료비만 (보험·감가 제외)",color:"#ff6b6b",winClass:"winner-red"},
+  ];
+  rr.innerHTML="";
+  items.forEach((item,i)=>{
+    const wins=i===0?sc<=mc:mc<=sc;
+    rr.innerHTML+=`<div class="res-card ${wins?item.winClass:""}">
+      <div class="res-label">${item.label}</div>
+      <div class="res-val" style="color:${wins?item.color:"#fff"}">${Math.round(item.val).toLocaleString()}원</div>
+      <div class="res-sub">${item.sub}</div>
+      ${wins?`<div class="res-win" style="color:${item.color}">✓ 더 저렴</div>`:""}
+    </div>`;
+  });
+  rr.innerHTML+=`<div class="res-card">
+    <div class="res-label">💰 차이</div>
+    <div class="res-val" style="font-size:18px;color:${diff>0?"#ff6b6b":"#4dabf7"}">${diff>0?"쏘카가":"자차가"}<br/>${Math.abs(diff).toLocaleString()}원 ↑</div>
+  </div>`;
+
+  // BEP
+  const fuelPerKm=FUEL/mpg;
+  const bep=selCar.rate!==fuelPerKm?Math.round((-FREE_KM*selCar.rate)/(fuelPerKm-selCar.rate)):null;
+  const bepValid=bep!==null&&bep>0&&bep<500;
+  const bb=document.getElementById("bepBox");
+  if(selCar.rate===0) bb.innerHTML=`<div class="ev-box">⚡ EV는 주행요금 무료! 거리가 길수록 쏘카가 압도적으로 유리해요 🌿</div>`;
+  else if(bepValid) bb.innerHTML=`<div class="bep-box">⚡ 손익분기점: <b style="color:#fff;font-size:14px">${bep}km</b> — 이 거리 이상이면 자차 연료비가 더 저렴해요</div>`;
+  else bb.innerHTML="";
+
+  // 차트
+  const labels=[], socarData=[], myData=[];
+  for(let k2=0;k2<=300;k2+=5){ labels.push(k2); socarData.push(socarCost(k2,selCar.rate)); myData.push(myCost(k2,mpg)); }
+  chart.data.labels=labels;
+  chart.data.datasets[0].data=socarData;
+  chart.data.datasets[1].data=myData;
+  chart.update();
+}
+update();
+</script>
+</body>
+</html>
