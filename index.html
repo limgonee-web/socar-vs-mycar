@@ -15,10 +15,15 @@
     .card-label { font-size: 12px; margin-bottom: 8px; font-weight: 600; }
     .blue { color: #1971c2; }
     .red { color: #e03131; }
-    .cat-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-    .cat-btn { padding: 4px 10px; border-radius: 20px; border: none; font-size: 11px; cursor: pointer; background: #f0f0f0; color: #555; }
-    .cat-btn.active { background: #d0e8ff; color: #1971c2; font-weight: 700; }
-    select { width: 100%; background: #f8f9fa; color: #222; border: 1px solid #ccc; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .cat-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+    .cat-btn { padding: 5px 12px; border-radius: 20px; border: none; font-size: 12px; cursor: pointer; background: #f0f0f0; color: #555; }
+    .cat-btn.active { background: #1971c2; color: #fff; font-weight: 700; }
+    .car-tab-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .car-tab { padding: 7px 13px; border-radius: 8px; border: 1.5px solid #e0e0e0; font-size: 12px; cursor: pointer; background: #fafafa; color: #444; transition: all 0.15s; }
+    .car-tab:hover { border-color: #1971c2; color: #1971c2; }
+    .car-tab.active { background: #e8f4ff; border-color: #1971c2; color: #1971c2; font-weight: 700; }
+    .car-tab .rate { font-size: 10px; color: #999; display: block; margin-top: 2px; }
+    .car-tab.active .rate { color: #1971c2; }
     .my-btn { display: block; width: 100%; text-align: left; margin-bottom: 5px; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 12px; border: 1px solid transparent; background: #f0f0f0; color: #555; }
     .my-btn.active { background: #fff0f0; color: #e03131; border-color: #e03131; font-weight: 700; }
     .slider-card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #e0e0e0; }
@@ -47,13 +52,13 @@
 </head>
 <body>
   <h2>🚗 쏘카 vs 자차 주행비용 비교</h2>
-  <p class="sub">휘발유 1,900원/L · 한국에너지공단 2025년 발표 연비 기준</p>
+  <p class="sub">휘발유 1,900원/L · 쏘카 30km 무료 · 주행요금만 비교</p>
 
   <div class="row">
     <div class="card flex2">
       <div class="card-label blue">🔵 쏘카 차종 선택</div>
       <div class="cat-wrap" id="catBtns"></div>
-      <select id="carSelect"></select>
+      <div class="car-tab-wrap" id="carTabs"></div>
     </div>
     <div class="card flex1">
       <div class="card-label red">🔴 자차 연비</div>
@@ -73,10 +78,11 @@
   <div class="result-row" id="resultRow"></div>
   <div id="bepBox"></div>
   <div class="chart-wrap"><canvas id="myChart" height="120"></canvas></div>
+
   <div style="text-align:center;margin-top:20px;margin-bottom:8px;">
     <a href="https://www.socar.kr/?airbridge_deeplink=https%3A%2F%2Fwww.socar.kr%2F&airbridge_referrer=airbridge%3Dtrue%26event_uuid%3D408d96bc-89ed-4d6d-ba5f-566d30884b26%26client_id%3D14ce41c9-727c-4c03-ad83-98b552623296%26channel%3Dairbridge.websdk%26referrer_timestamp%3D1771982367250"
       target="_blank"
-      style="display:inline-block;background:#1971c2;color:#fff;font-size:15px;font-weight:700;padding:14px 36px;border-radius:12px;text-decoration:none;letter-spacing:-0.3px;">
+      style="display:inline-block;background:#1971c2;color:#fff;font-size:15px;font-weight:700;padding:14px 36px;border-radius:12px;text-decoration:none;">
       🚗 쏘카 예약하러 가기
     </a>
   </div>
@@ -132,24 +138,26 @@ categories.forEach(c=>{
   const b=document.createElement("button");
   b.className="cat-btn"+(c===selCat?" active":"");
   b.textContent=c;
-  b.onclick=()=>{ selCat=c; selCar=SOCAR.find(s=>s.category===c); renderCatBtns(); renderSelect(); update(); };
+  b.onclick=()=>{ selCat=c; selCar=SOCAR.find(s=>s.category===c); renderCatBtns(); renderCarTabs(); update(); };
   catWrap.appendChild(b);
 });
-function renderCatBtns(){ catWrap.querySelectorAll(".cat-btn").forEach((b,i)=>b.className="cat-btn"+(categories[i]===selCat?" active":"")); }
-
-// 차종 select
-const carSel=document.getElementById("carSelect");
-function renderSelect(){
-  carSel.innerHTML="";
-  SOCAR.filter(s=>s.category===selCat).forEach(s=>{
-    const o=document.createElement("option");
-    o.value=s.name; o.textContent=`${s.name} — ${s.rate===0?"EV(주행무료)":s.rate+"원/km"}`;
-    carSel.appendChild(o);
-  });
-  carSel.value=selCar.name;
+function renderCatBtns(){
+  catWrap.querySelectorAll(".cat-btn").forEach((b,i)=>b.className="cat-btn"+(categories[i]===selCat?" active":""));
 }
-carSel.onchange=()=>{ selCar=SOCAR.find(s=>s.name===carSel.value); update(); };
-renderSelect();
+
+// 차종 탭
+const carTabWrap=document.getElementById("carTabs");
+function renderCarTabs(){
+  carTabWrap.innerHTML="";
+  SOCAR.filter(s=>s.category===selCat).forEach(s=>{
+    const b=document.createElement("button");
+    b.className="car-tab"+(s.name===selCar.name?" active":"");
+    b.innerHTML=`${s.name}<span class="rate">${s.rate===0?"EV 주행무료":s.rate+"원/km"}</span>`;
+    b.onclick=()=>{ selCar=s; renderCarTabs(); update(); };
+    carTabWrap.appendChild(b);
+  });
+}
+renderCarTabs();
 
 // 자차 버튼
 const myWrap=document.getElementById("myCarBtns");
@@ -175,7 +183,9 @@ quickVals.forEach(v=>{
   b.onclick=()=>{ km=v; slider.value=v; kmLabel.textContent=v+" km"; renderQuick(); update(); };
   quickWrap.appendChild(b);
 });
-function renderQuick(){ quickWrap.querySelectorAll(".q-btn").forEach((b,i)=>b.className="q-btn"+(quickVals[i]===km?" active":"")); }
+function renderQuick(){
+  quickWrap.querySelectorAll(".q-btn").forEach((b,i)=>b.className="q-btn"+(quickVals[i]===km?" active":""));
+}
 
 // 차트 초기화
 const ctx=document.getElementById("myChart").getContext("2d");
@@ -189,7 +199,7 @@ chart=new Chart(ctx,{
     responsive:true, animation:false,
     plugins:{
       legend:{ labels:{ color:"#444", font:{size:12} } },
-      tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString()}원` } }
+      tooltip:{ callbacks:{ label:c=>`${c.dataset.label}: ${Math.round(c.raw).toLocaleString()}원` } }
     },
     scales:{
       x:{ ticks:{color:"#888",font:{size:11}}, grid:{color:"#eee"}, title:{display:true,text:"km",color:"#aaa"} },
@@ -204,6 +214,7 @@ function update(){
   const mc=myCost(km,mpg);
   const diff=Math.abs(sc-mc);
   const socarWins=sc<=mc;
+  const cheaperColor=socarWins?"#1971c2":"#e03131";
 
   // 결과 카드
   const rr=document.getElementById("resultRow");
@@ -223,11 +234,11 @@ function update(){
   });
 
   // 차이 카드
-  const cheaperLabel = socarWins ? `쏘카가 ${diff.toLocaleString()}원 저렴해요` : `자차가 ${diff.toLocaleString()}원 저렴해요`;
-  const cheaperColor = socarWins ? "#1971c2" : "#e03131";
+  const cheaperWho=socarWins?"쏘카가":"자차가";
+  const cheaperAmt=`${diff.toLocaleString()}원 저렴해요`;
   rr.innerHTML+=`<div class="res-card">
     <div class="res-label">💰 차이</div>
-    <div class="res-val" style="font-size:16px;color:${cheaperColor};line-height:1.5">${cheaperLabel}</div>
+    <div class="res-val" style="color:${cheaperColor};line-height:1.4">${cheaperWho}<br/>${cheaperAmt}</div>
   </div>`;
 
   // BEP
