@@ -7,47 +7,47 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #13151f; color: #eef; font-family: sans-serif; padding: 20px 16px; min-height: 100vh; }
+    body { background: #f5f6fa; color: #222; font-family: sans-serif; padding: 20px 16px; min-height: 100vh; }
     h2 { text-align: center; font-size: 19px; margin-bottom: 4px; }
-    .sub { text-align: center; color: #556; font-size: 12px; margin-bottom: 20px; }
+    .sub { text-align: center; color: #888; font-size: 12px; margin-bottom: 20px; }
     .row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .card { background: #1e2130; border-radius: 12px; padding: 14px; }
-    .card-label { font-size: 12px; margin-bottom: 8px; }
-    .blue { color: #4dabf7; }
-    .red { color: #ff6b6b; }
+    .card { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #e0e0e0; }
+    .card-label { font-size: 12px; margin-bottom: 8px; font-weight: 600; }
+    .blue { color: #1971c2; }
+    .red { color: #e03131; }
     .cat-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-    .cat-btn { padding: 4px 10px; border-radius: 20px; border: none; font-size: 11px; cursor: pointer; background: #2a2f45; color: #aab; }
-    .cat-btn.active { background: #1c3a6b; color: #4dabf7; }
-    select { width: 100%; background: #2a2f45; color: #fff; border: 1px solid #3a3f5c; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
-    .my-btn { display: block; width: 100%; text-align: left; margin-bottom: 5px; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 12px; border: 1px solid transparent; background: #2a2f45; color: #aab; }
-    .my-btn.active { background: #2e1a1a; color: #ff6b6b; border-color: #ff6b6b; font-weight: 700; }
-    .slider-card { background: #1e2130; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+    .cat-btn { padding: 4px 10px; border-radius: 20px; border: none; font-size: 11px; cursor: pointer; background: #f0f0f0; color: #555; }
+    .cat-btn.active { background: #d0e8ff; color: #1971c2; font-weight: 700; }
+    select { width: 100%; background: #f8f9fa; color: #222; border: 1px solid #ccc; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .my-btn { display: block; width: 100%; text-align: left; margin-bottom: 5px; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 12px; border: 1px solid transparent; background: #f0f0f0; color: #555; }
+    .my-btn.active { background: #fff0f0; color: #e03131; border-color: #e03131; font-weight: 700; }
+    .slider-card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #e0e0e0; }
     .slider-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .slider-top span:first-child { font-size: 13px; color: #aab; }
-    .slider-top span:last-child { font-size: 18px; font-weight: 800; }
-    input[type=range] { width: 100%; accent-color: #4dabf7; margin-bottom: 10px; }
+    .slider-top span:first-child { font-size: 13px; color: #666; }
+    .slider-top span:last-child { font-size: 18px; font-weight: 800; color: #222; }
+    input[type=range] { width: 100%; accent-color: #1971c2; margin-bottom: 10px; }
     .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .q-btn { flex: 1; min-width: 36px; padding: 5px 0; border-radius: 8px; border: none; background: #2a2f45; color: #778; cursor: pointer; font-size: 12px; }
-    .q-btn.active { background: #1c3a6b; color: #4dabf7; }
+    .q-btn { flex: 1; min-width: 36px; padding: 5px 0; border-radius: 8px; border: none; background: #f0f0f0; color: #666; cursor: pointer; font-size: 12px; }
+    .q-btn.active { background: #d0e8ff; color: #1971c2; font-weight: 700; }
     .result-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-    .res-card { flex: 1; min-width: 100px; border-radius: 14px; padding: 14px; text-align: center; border: 2px solid #2a2f45; background: #1e2130; }
-    .res-card.winner-blue { background: #162136; border-color: #4dabf7; }
-    .res-card.winner-red { background: #2e1a1a; border-color: #ff6b6b; }
-    .res-label { font-size: 11px; color: #aab; margin-bottom: 4px; }
+    .res-card { flex: 1; min-width: 100px; border-radius: 14px; padding: 14px; text-align: center; border: 2px solid #e0e0e0; background: #fff; }
+    .res-card.winner-blue { background: #e8f4ff; border-color: #1971c2; }
+    .res-card.winner-red { background: #fff0f0; border-color: #e03131; }
+    .res-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .res-val { font-size: 22px; font-weight: 800; }
-    .res-sub { font-size: 10px; color: #556; margin-top: 4px; }
-    .res-win { font-size: 11px; margin-top: 4px; }
-    .bep-box { background: #1e1a2e; border: 1px solid #6c4db5; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #c5b8f0; text-align: center; }
-    .ev-box { background: #162136; border: 1px solid #4dabf7; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #a3d4f5; text-align: center; }
-    .chart-wrap { background: #1e2130; border-radius: 14px; padding: 14px 8px 8px; }
-    .foot { text-align: center; color: #334; font-size: 10px; margin-top: 8px; }
+    .res-sub { font-size: 10px; color: #aaa; margin-top: 4px; }
+    .res-win { font-size: 11px; margin-top: 4px; font-weight: 600; }
+    .bep-box { background: #f3f0ff; border: 1px solid #9775fa; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #5f3dc4; text-align: center; }
+    .ev-box { background: #e8f4ff; border: 1px solid #1971c2; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #1971c2; text-align: center; }
+    .chart-wrap { background: #fff; border-radius: 14px; padding: 14px 8px 8px; border: 1px solid #e0e0e0; }
+    .foot { text-align: center; color: #bbb; font-size: 10px; margin-top: 8px; }
     .flex2 { flex: 2; min-width: 200px; }
     .flex1 { flex: 1; min-width: 160px; }
   </style>
 </head>
 <body>
   <h2>🚗 쏘카 vs 자차 주행비용 비교</h2>
-  <p class="sub">휘발유 1,900원/L · 쏘카 30km 무료 · 주행요금만 비교</p>
+  <p class="sub">휘발유 1,900원/L 기준 · 한국에너지공단 2025년 발표 연비 기준</p>
 
   <div class="row">
     <div class="card flex2">
@@ -64,15 +64,15 @@
   <div class="slider-card">
     <div class="slider-top">
       <span>주행거리</span>
-      <span id="kmLabel">80 km</span>
+      <span id="kmLabel">30 km</span>
     </div>
-    <input type="range" id="kmSlider" min="0" max="300" value="80" />
+    <input type="range" id="kmSlider" min="0" max="300" value="30" />
     <div class="quick-btns" id="quickBtns"></div>
   </div>
 
   <div class="result-row" id="resultRow"></div>
   <div id="bepBox"></div>
-  <div class="chart-wrap"><canvas id="myChart"></canvas></div>
+  <div class="chart-wrap"><canvas id="myChart" height="120"></canvas></div>
   <p class="foot">* 자차: 기름값만 포함 (보험·감가상각·주차비 미포함) / 쏘카: 30km 초과 주행요금만 (대여료 제외)</p>
 
 <script>
@@ -112,8 +112,9 @@ const MY_CARS = [
 ];
 const FUEL=1900, FREE_KM=30;
 const categories=[...new Set(SOCAR.map(c=>c.category))];
+const quickVals=[10,30,50,80,100,150,200];
 
-let selCat="경형", selCar=SOCAR[0], myCarIdx=2, km=80, chart;
+let selCat="경형", selCar=SOCAR[0], myCarIdx=2, km=30, chart;
 
 function socarCost(k,rate){ return k<=FREE_KM?0:(k-FREE_KM)*rate; }
 function myCost(k,mpg){ return Math.round((k/mpg)*FUEL); }
@@ -159,7 +160,6 @@ const kmLabel=document.getElementById("kmLabel");
 slider.oninput=()=>{ km=+slider.value; kmLabel.textContent=km+" km"; renderQuick(); update(); };
 
 // 빠른 버튼
-const quickVals=[10,30,50,100,150,200,300];
 const quickWrap=document.getElementById("quickBtns");
 quickVals.forEach(v=>{
   const b=document.createElement("button");
@@ -175,15 +175,18 @@ const ctx=document.getElementById("myChart").getContext("2d");
 chart=new Chart(ctx,{
   type:"line",
   data:{ labels:[], datasets:[
-    {label:"쏘카",data:[],borderColor:"#4dabf7",borderWidth:2.5,pointRadius:0,tension:0.3},
-    {label:"자차",data:[],borderColor:"#ff6b6b",borderWidth:2.5,pointRadius:0,tension:0.3}
+    {label:"쏘카",data:[],borderColor:"#1971c2",borderWidth:2.5,pointRadius:0,tension:0.3,fill:false},
+    {label:"자차",data:[],borderColor:"#e03131",borderWidth:2.5,pointRadius:0,tension:0.3,fill:false}
   ]},
   options:{
     responsive:true, animation:false,
-    plugins:{ legend:{ labels:{ color:"#aab", font:{size:12} } }, tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString()}원` } } },
+    plugins:{
+      legend:{ labels:{ color:"#444", font:{size:12} } },
+      tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString()}원` } }
+    },
     scales:{
-      x:{ ticks:{color:"#667",font:{size:11}}, grid:{color:"#252a40"}, title:{display:true,text:"km",color:"#556"} },
-      y:{ ticks:{color:"#667",font:{size:10}, callback:v=>v>=10000?Math.round(v/10000)+"만":v}, grid:{color:"#252a40"} }
+      x:{ ticks:{color:"#888",font:{size:11}}, grid:{color:"#eee"}, title:{display:true,text:"km",color:"#aaa"} },
+      y:{ ticks:{color:"#888",font:{size:10}, callback:v=>v>=10000?Math.round(v/10000)+"만":v}, grid:{color:"#eee"} }
     }
   }
 });
@@ -192,27 +195,32 @@ function update(){
   const mpg=MY_CARS[myCarIdx].mpg;
   const sc=socarCost(km,selCar.rate);
   const mc=myCost(km,mpg);
-  const diff=sc-mc;
+  const diff=Math.abs(sc-mc);
+  const socarWins=sc<=mc;
 
   // 결과 카드
   const rr=document.getElementById("resultRow");
   const items=[
-    {label:`🔵 쏘카 (${selCar.name})`,val:sc,sub:`30km 무료 + ${selCar.rate===0?"EV 주행무료":selCar.rate+"원/km"}`,color:"#4dabf7",winClass:"winner-blue"},
-    {label:`🔴 자차 (${MY_CARS[myCarIdx].label})`,val:mc,sub:"연료비만 (보험·감가 제외)",color:"#ff6b6b",winClass:"winner-red"},
+    {label:`🔵 쏘카 (${selCar.name})`,val:sc,sub:`30km 무료 + ${selCar.rate===0?"EV 주행무료":selCar.rate+"원/km"}`,color:"#1971c2",winClass:"winner-blue"},
+    {label:`🔴 자차 (${MY_CARS[myCarIdx].label})`,val:mc,sub:"연료비만 (보험·감가 제외)",color:"#e03131",winClass:"winner-red"},
   ];
   rr.innerHTML="";
   items.forEach((item,i)=>{
-    const wins=i===0?sc<=mc:mc<=sc;
+    const wins=i===0?socarWins:!socarWins;
     rr.innerHTML+=`<div class="res-card ${wins?item.winClass:""}">
       <div class="res-label">${item.label}</div>
-      <div class="res-val" style="color:${wins?item.color:"#fff"}">${Math.round(item.val).toLocaleString()}원</div>
+      <div class="res-val" style="color:${wins?item.color:"#222"}">${Math.round(item.val).toLocaleString()}원</div>
       <div class="res-sub">${item.sub}</div>
       ${wins?`<div class="res-win" style="color:${item.color}">✓ 더 저렴</div>`:""}
     </div>`;
   });
+
+  // 차이 카드
+  const cheaperLabel = socarWins ? `쏘카가 ${diff.toLocaleString()}원 저렴해요` : `자차가 ${diff.toLocaleString()}원 저렴해요`;
+  const cheaperColor = socarWins ? "#1971c2" : "#e03131";
   rr.innerHTML+=`<div class="res-card">
     <div class="res-label">💰 차이</div>
-    <div class="res-val" style="font-size:18px;color:${diff>0?"#ff6b6b":"#4dabf7"}">${diff>0?"쏘카가":"자차가"}<br/>${Math.abs(diff).toLocaleString()}원 ↑</div>
+    <div class="res-val" style="font-size:16px;color:${cheaperColor};line-height:1.5">${cheaperLabel}</div>
   </div>`;
 
   // BEP
@@ -221,7 +229,7 @@ function update(){
   const bepValid=bep!==null&&bep>0&&bep<500;
   const bb=document.getElementById("bepBox");
   if(selCar.rate===0) bb.innerHTML=`<div class="ev-box">⚡ EV는 주행요금 무료! 거리가 길수록 쏘카가 압도적으로 유리해요 🌿</div>`;
-  else if(bepValid) bb.innerHTML=`<div class="bep-box">⚡ 손익분기점: <b style="color:#fff;font-size:14px">${bep}km</b> — 이 거리 이상이면 자차 연료비가 더 저렴해요</div>`;
+  else if(bepValid) bb.innerHTML=`<div class="bep-box">⚡ 손익분기점: <b style="color:#5f3dc4;font-size:14px">${bep}km</b> — 이 거리 이상이면 자차 연료비가 더 저렴해요</div>`;
   else bb.innerHTML="";
 
   // 차트
